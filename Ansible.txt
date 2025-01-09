@@ -121,9 +121,9 @@ Ansible Playbook to install git, java and maven
         name: git
         state: present
 
-    - name: Install Java (OpenJDK 11)
+    - name: Install Java (OpenJDK 17)
       ansible.builtin.yum:
-        name: java-11-openjdk
+        name: java-17
         state: present
 
     - name: Install Maven
