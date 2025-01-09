@@ -4,6 +4,7 @@ amazon-linux-extras install ansible2 -y
 yum install python-pip -y
 
 Set password for the root user
+------------------------------
 PasswordAuthentication: yes
 path:/etc/ssh/sshd_config 
 restart: systemctl restart sshd
@@ -12,10 +13,74 @@ GENERATE A KEY IN  ANSIBLE USER ON MASTER SERVER (ssh-keygen)
 It will generate 2 keys (public & private)
 COPY THE PUBLIC KEY TO ALL SLAVE SERVERS (ssh-copy-id root@slave_ip)
 
+Ansible COnfigurations:
+----------------------
+ ENBALE ANSIBLE INVENTORY AND SUDO USER (nano /etc/ansible/ansible.cfg)
+ If file doesn't exist create it add the below things:
+
+ [defaults]
+
+ #some basic default values 
+ inventory       = /etc/ansible/hosts
+ #library        = /usr/share/my_module
+ #module_utils   = /usr/share/my_module
+ #remote_tmp     = ~/.ansible/tmp
+ #local_tmp      = ~/.ansible/tmp
+ #plugin_filters_cfg = /etc/ansible/plugins
+ #forks          = 5
+ #poll_interval  = 15
+ sudo_user       = root
+ #ask_sudo_pass  = True
+ #ask_pass       = True
+ #transport      = smart
+ #remote_port    = 22
+ #module_lang    = c
+ #module_set_locale = False
+
+save and exit
+
+ADD INVENTORIES (nano /etc/ansible/hosts)
+-----------------------------------------
+#A collection of servers connected to ansible control-node
+[all]
+50.17.36.133 ansible_user=user1
+
+save and exit
+
+TO CHECK WITH SLAVE SERVER CONNECTION
+-------------------------------------
+-->To see the list of hosts in inventory: ansible all --lists-host
+-->To see the list of particular group hosts in inventory : ansible group_name --list-hosts
+-->To see the 1st hosts in inventory : ansible all[0] --list-hosts
+-->To check the network connection between master & slave : ansible all -m ping
 
 
-Ansible playbook to install httpd server
-----------------------------------------
+Ansible Inventory
+-----------------
+The inventory file in Ansible is where you define the hosts and groups of hosts that Ansible will manage. 
+It tells Ansible which systems to connect to and provides variables and configuration for those systems.
+
+example:
+[all]
+server1 ansible_host=192.168.1.10 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
+server2 ansible_host=192.168.1.11 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+If we need customized inventory we can create a inventory file in a current directory of a project.
+file structure:
+ Project:
+  |_ansible-playbooks
+      |_inventory.ini
+      |_play.yml
+
+Ansible commands to run yml files:
+-->to run playbook file: ansible-playbook file.yml 
+-->to run with specific inventory file: ansible-playbook -i inventory.ini file.yml
+-->to run by prompting password for host: ansible-playbook file.yml --ask-become-pass
+
+Ansible Playbooks:
+-----------------
+
+Ansible playbook to install httpd server:
 
 ---
 - name: Setup HTTPD server on multiple machines
@@ -37,16 +102,6 @@ Ansible playbook to install httpd server
 
 
 note:[the --- is called a YAML document separator.]
-
-Ansible Inventory
------------------
-The inventory file in Ansible is where you define the hosts and groups of hosts that Ansible will manage. 
-It tells Ansible which systems to connect to and provides variables and configuration for those systems.
-
-example:
-[all]
-server1 ansible_host=192.168.1.10 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
-server2 ansible_host=192.168.1.11 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
 
 
 Ansible Playbook to install git, java and maven
@@ -81,3 +136,92 @@ Ansible Playbook to install git, java and maven
         echo "Git Version: $(git --version)"
         echo "Java Version: $(java -- version)"
         echo "Maven Version: $(mvn --version)"
+
+WRITE A PLAYBOOK WITH VARIABLE:
+-------------------------------
+-->to store single variable:
+
+---
+- name: installing git on slave server
+  hosts: all
+  connection: ssh
+  become: yes
+
+  vars:
+    abc: git
+  tasks:
+    - name: install git
+      action: yum name={{abc}} state=present
+
+-->to store multiple variable
+
+---
+- name: installing git on slave server
+  hosts: all
+  connection: ssh
+  become: yes
+
+  vars:
+    abc: git
+    xyz: maven
+  
+  tasks:
+    - name: install git
+      action: yum name={{abc}} state=present
+  tasks:
+    - name: install maven
+      action: yum name={{xyz}} state=present
+
+TO ADD VARIABLES DYNAMICALLY:
+-----------------------------
+-->single variable
+
+---
+- name: installing git on slave server
+  hosts: all
+  connection: ssh
+  become: yes
+  
+  tasks:
+    - name: install git
+      action: yum name={{abc}} state=present
+
+
+cmd: ansible-playbook file.yml --extra-vars "abc=git"
+
+--> multiple variables
+
+---
+- name: installing git on slave server
+  hosts: all
+  connection: ssh
+  become: yes
+
+  tasks:
+    - name: install git
+      action: yum name={{abc}} state=present
+  tasks:
+    - name: install maven
+      action: yum name={{xyz}} state=present
+
+cmd: ansible-playbook file.yml --extras-vars "abc=git xyz=maven"
+
+
+WRITE A PLAYBOOK TO INSTALL PACKAGES ON DIFFERENT WAYS:
+-------------------------------------------------------
+---
+- name: install java on slave machines
+  hosts: prod
+  connection: ssh
+  become: yes
+  
+  tasks:
+    - name: install java
+      yum : name=java-17 state=present 
+  
+    - name: install java
+      action: yum name=java-17 state=present
+
+    - name: install java
+      command: yum install java-17 -y
+      
