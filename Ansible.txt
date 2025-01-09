@@ -49,7 +49,7 @@ save and exit
 
 TO CHECK WITH SLAVE SERVER CONNECTION
 -------------------------------------
--->To see the list of hosts in inventory: ansible all --lists-host
+-->To see the list of hosts in inventory: ansible all --list-hosts
 -->To see the list of particular group hosts in inventory : ansible group_name --list-hosts
 -->To see the 1st hosts in inventory : ansible all[0] --list-hosts
 -->To check the network connection between master & slave : ansible all -m ping
