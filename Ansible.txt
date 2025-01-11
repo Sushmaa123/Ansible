@@ -296,10 +296,10 @@ WRITE A PLAYBOOK TO DEPLOY A WEBSITE:
         state: started
         enabled: yes
     - name: create a file
-       file:
-         path: "/var/www/html/index.html"
-         state: touch
-         mode: 777
+      file:
+        path: "/var/www/html/index.html"
+        state: touch
+        mode: 777
     - name: inserting data in a file
       copy:
        dest: file.txt
