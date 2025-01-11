@@ -337,10 +337,9 @@ TO SETUP JENKINS ON AMAZON LINUX:
         creates: /etc/yum.repos.d/jenkins.repo
 
     - name: Import Jenkins GPG key
-      rpm_key:
-        state: present
-        key: "{{ jenkins_repo_key_url }}"
-
+      ansible.builtin.rpm_key:
+       state: present
+       key: "{{ jenkins_repo_key_url }}"
     - name: Install Jenkins
       yum:
         name: jenkins
