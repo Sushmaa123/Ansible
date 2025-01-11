@@ -351,14 +351,6 @@ TO SETUP JENKINS ON AMAZON LINUX:
         state: started
         enabled: yes
 
-    - name: Open Jenkins port 8080 in the firewall (if firewalld is active)
-      firewalld:
-        port: 8080/tcp
-        permanent: yes
-        state: enabled
-        immediate: yes
-      when: ansible_facts['services']['firewalld']['status'] == 'running'
-
     - name: Display Jenkins initial admin password
       debug:
         msg: >
