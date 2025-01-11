@@ -77,6 +77,15 @@ Ansible commands to run yml files:
 -->to run with specific inventory file: ansible-playbook -i inventory.ini file.yml
 -->to run by prompting password for host: ansible-playbook file.yml --ask-become-pass
 
+TO store password of slave machine in inventory file:
+-----------------------------------------------------
+[all]
+slave-1 ansible_host=54.147.178.56  ansible_user=user1 ansible_become_pass=user1
+slave-2 ansible_host=54.167.117.147 ansible_user=user2 ansible_become_pass=user2
+
+cmd:
+to run playbook on any specific slave belong to same group: ansible-playbook playbook.yml --ask-become-pass --limit slave-1
+
 Ansible Playbooks:
 -----------------
 
@@ -204,9 +213,9 @@ cmd: ansible-playbook file.yml --extra-vars "abc=git"
     - name: install maven
       action: yum name={{xyz}} state=present
 
-cmd: ansible-playbook file.yml --extra-vars "abc=git xyz=maven"
+cmd: ansible-playbook file.yml --extras-vars "abc=git xyz=maven"
 
-
+ 
 WRITE A PLAYBOOK TO INSTALL PACKAGES ON DIFFERENT WAYS:
 -------------------------------------------------------
 ---
@@ -225,3 +234,134 @@ WRITE A PLAYBOOK TO INSTALL PACKAGES ON DIFFERENT WAYS:
     - name: install java
       command: yum install java-17 -y
       
+WRITE A PLAYBOOK TO CREATE A FILE AND DIRECTORY
+----------------------------------------------
+---
+  hosts: dev
+  connection: ssh
+  become: yes
+  tasks:
+     - name: create a file
+       file:
+        path: "demo.txt"
+        state: touch
+     - name: create a directory
+       file:
+        path: "ansible"
+        state: directory
+
+WRITE A PLAYBOOK FOR ENTERING  A DATA IN A FILE:
+------------------------------------------------
+---
+hosts: all
+become: yes
+tasks:
+  - name: inserting data in a file
+    copy:
+      dest: file.txt
+      content: |
+         hi good morning all
+         welcome to ansible session.
+
+WRITE A PLAYBOOK TO CHANGE THE PERMISSIONS OF A FILE:
+-----------------------------------------------------
+---
+hosts: dev
+  connection: ssh
+  become: yes
+  tasks:
+     - name: create a file
+       file:
+         path: "demo.txt"
+         state: touch
+         mode: 777
+
+WRITE A PLAYBOOK TO DEPLOY A WEBSITE:
+-------------------------------------
+---
+- name: Setup HTTPD server on multiple machines
+  hosts: dev
+  become: yes
+  tasks:
+    # Install HTTPD package
+    - name: Install HTTPD
+      yum:
+        name: httpd
+        state: present
+
+    # Start and enable the HTTPD service
+    - name: Start and enable HTTPD service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: create a file
+       file:
+         path: "/var/www/html/index.html"
+         state: touch
+         mode: 777
+    - name: inserting data in a file
+      copy:
+       dest: file.txt
+       content: |
+         <h1>this is my web application, I have deployed using ansible</h1>
+
+TO SETUP JENKINS ON AMAZON LINUX:
+---------------------------------
+---
+- name: Setup Jenkins on Amazon Linux
+  hosts: all
+  become: yes
+
+  vars:
+    jenkins_repo_url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    jenkins_repo_key_url: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    java_package: java-17
+
+  tasks:
+    - name: Update all packages
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Java
+      yum:
+        name: "{{ java_package }}"
+        state: present
+
+    - name: Add Jenkins repository
+      command: >
+        curl --silent --location "{{ jenkins_repo_url }}"
+        -o /etc/yum.repos.d/jenkins.repo
+      args:
+        creates: /etc/yum.repos.d/jenkins.repo
+
+    - name: Import Jenkins GPG key
+      rpm_key:
+        state: present
+        key: "{{ jenkins_repo_key_url }}"
+
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
+
+    - name: Open Jenkins port 8080 in the firewall (if firewalld is active)
+      firewalld:
+        port: 8080/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: ansible_facts['services']['firewalld']['status'] == 'running'
+
+    - name: Display Jenkins initial admin password
+      debug:
+        msg: >
+          The Jenkins initial admin password is stored in
+          /var/lib/jenkins/secrets/initialAdminPassword.
