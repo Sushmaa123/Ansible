@@ -204,7 +204,7 @@ cmd: ansible-playbook file.yml --extra-vars "abc=git"
     - name: install maven
       action: yum name={{xyz}} state=present
 
-cmd: ansible-playbook file.yml --extras-vars "abc=git xyz=maven"
+cmd: ansible-playbook file.yml --extra-vars "abc=git xyz=maven"
 
 
 WRITE A PLAYBOOK TO INSTALL PACKAGES ON DIFFERENT WAYS:
