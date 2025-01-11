@@ -237,7 +237,7 @@ WRITE A PLAYBOOK TO INSTALL PACKAGES ON DIFFERENT WAYS:
 WRITE A PLAYBOOK TO CREATE A FILE AND DIRECTORY
 ----------------------------------------------
 ---
-  hosts: dev
+- hosts: dev
   connection: ssh
   become: yes
   tasks:
@@ -253,11 +253,11 @@ WRITE A PLAYBOOK TO CREATE A FILE AND DIRECTORY
 WRITE A PLAYBOOK FOR ENTERING  A DATA IN A FILE:
 ------------------------------------------------
 ---
-hosts: all
-become: yes
-tasks:
-  - name: inserting data in a file
-    copy:
+- hosts: all
+  become: yes
+  tasks:
+   - name: inserting data in a file
+     copy:
       dest: file.txt
       content: |
          hi good morning all
@@ -266,7 +266,7 @@ tasks:
 WRITE A PLAYBOOK TO CHANGE THE PERMISSIONS OF A FILE:
 -----------------------------------------------------
 ---
-hosts: dev
+- hosts: dev
   connection: ssh
   become: yes
   tasks:
