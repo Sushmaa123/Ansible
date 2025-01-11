@@ -351,8 +351,11 @@ TO SETUP JENKINS ON AMAZON LINUX:
         state: started
         enabled: yes
 
+    - name: read file
+      slurp:
+        src: /var/lib/jenkins/secrets/initialAdminPassword
+      register: file_content
+
     - name: Display Jenkins initial admin password
       debug:
-        msg: >
-          The Jenkins initial admin password is stored in
-          /var/lib/jenkins/secrets/initialAdminPassword.
+        msg: "{{ file_content.content | b64decode }}"
