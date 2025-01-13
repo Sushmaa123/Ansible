@@ -359,3 +359,109 @@ TO SETUP JENKINS ON AMAZON LINUX:
     - name: Display Jenkins initial admin password
       debug:
         msg: "{{ file_content.content | b64decode }}"
+
+ANSIBLE-PLAYBOOK FOR USER AND GROUP MANAGEMENT:
+-----------------------------------------------
+---
+- name: User and Group Management
+  hosts: all
+  become: yes  # Run tasks with elevated privileges
+  vars:
+    user_name: "john"
+    user_password: "{{ 'password123' | password_hash('sha512') }}"  # Encrypted password
+    group_name: "devops"
+  tasks:
+    - name: Ensure the group exists
+      group:
+        name: "{{ group_name }}"
+        state: present
+    - name: Create the user and set the password
+      user:
+        name: "{{ user_name }}"
+        password: "{{ user_password }}"
+        groups: "{{ group_name }}"
+        shell: "/bin/bash"
+        create_home: yes
+        state: present
+
+ANSIBLE-PLAYBOOK TO CREATE MULTIPLE USERS AND MULTIPLE GROUPS AND USERS TO A GROUP:
+-----------------------------------------------------------------------------------
+---
+- name: Manage multiple users and groups
+  hosts: all
+  become: yes  # Run tasks as root
+
+  vars:
+    users:
+      - name: alpha
+        password: "{{ 'alphapassword' | password_hash('sha512') }}"
+        groups: "developers"
+
+      - name: beta
+        password: "{{ 'betapassword' | password_hash('sha512') }}"
+        groups: "developers,devops"
+
+      - name: charlie
+        password: "{{ 'charliepassword' | password_hash('sha512') }}"
+        groups: "testers"
+
+    groups:
+      - developers
+      - testers
+      - devops
+
+  tasks:
+    - name: Ensure groups exist
+      group:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ groups }}"
+
+    - name: Create users and add them to groups
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        groups: "{{ item.groups }}"
+        shell: "/bin/bash"
+        create_home: yes
+        state: present
+      with_items: "{{ users }}"
+
+ANSIBLE_PLAYBOOK TO COPY FILES FROM MASTER TO SLAVE
+--------------------------------------------------
+---
+- hosts: all
+  become: yes
+  connection: ssh
+  tasks:
+    - name: copy files from src to destination
+      copy:
+        src: sample.yml
+        dest: sample.yml
+
+ANSIBLE PLAYBOOK TO COPY THE FILES FROM ONE LOCATION TO ANOTHER ON SLAVE
+-----------------------------------------------------------------------
+---
+- name: Copy files from one location to another on slave
+  hosts: slave
+  become: yes  # Run as root (if needed)
+  tasks:
+    - name: Copy file from source to destination
+      copy:
+        src: /path/to/source/file.txt
+        dest: /path/to/destination/file.txt
+        owner: root
+        group: root
+        mode: '0644'  # Permissions for the copied file
+
+ANSIBLE PLAYBOOK TO COPY DIRECTORIES RECURSIVELY
+-----------------------------------------------
+    - name: Copy directory recursively
+      copy:
+        src: /path/to/source/directory/
+        dest: /path/to/destination/directory/
+        owner: root
+        group: root
+        mode: '0755'
+        recurse: yes  # This ensures all contents are copied
+
