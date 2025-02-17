@@ -15,7 +15,7 @@ COPY THE PUBLIC KEY TO ALL SLAVE SERVERS (ssh-copy-id root@slave_ip)
 
 Ansible COnfigurations:
 ----------------------
- ENBALE ANSIBLE INVENTORY AND SUDO USER (nano /etc/ansible/ansible.cfg)
+ ENABLE ANSIBLE INVENTORY AND SUDO USER (nano /etc/ansible/ansible.cfg)
  If file doesn't exist create it add the below things:
 
  [defaults]
