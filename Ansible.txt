@@ -3,8 +3,12 @@ To install ansible on amazonlinux
 amazon-linux-extras install ansible2 -y
 yum install python-pip -y
 
-Set password for the root user
-------------------------------
+Create a user on master and slave instance: sudo adduser username
+set password for the users: sudo passwd username 
+add users to the sudoers file: sudo nano /etc/sudoers
+
+enable password authentication for user on each instance
+-------------------------------------------------------
 PasswordAuthentication: yes
 path:/etc/ssh/sshd_config 
 restart: systemctl restart sshd
