@@ -17,7 +17,7 @@ GENERATE A KEY IN  ANSIBLE USER ON MASTER SERVER (ssh-keygen)
 It will generate 2 keys (public & private)
 COPY THE PUBLIC KEY TO ALL SLAVE SERVERS (ssh-copy-id root@slave_ip)
 
-Ansible COnfigurations:
+Ansible Configurations:
 ----------------------
  ENABLE ANSIBLE INVENTORY AND SUDO USER (nano /etc/ansible/ansible.cfg)
  If file doesn't exist create it add the below things:
@@ -115,6 +115,32 @@ Ansible playbook to install httpd server:
 
 
 note:[the --- is called a YAML document separator.]
+
+To stop and uninstall httpd on slave machine:
+---------------------------------------------
+---
+- name: Uninstall HTTPD server from multiple machines
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove HTTPD package
+      yum:
+        name: httpd
+        state: absent
+
+    - name: Remove leftover configuration files
+      file:
+        path: /etc/httpd
+        state: absent
+
+    - name: Ensure HTTPD service is stopped and disabled
+      service:
+        name: httpd
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+
 
 
 Ansible Playbook to install git, java and maven
