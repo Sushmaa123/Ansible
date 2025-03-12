@@ -345,42 +345,31 @@ TO SETUP JENKINS ON AMAZON LINUX:
 
   vars:
     jenkins_repo_url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
-    jenkins_repo_key_url: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    jenkins_repo_key_url: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
     java_package: java-17
 
   tasks:
     - name: Update all packages
-      yum:
-        name: "*"
-        state: latest
+      command: yum update -y
 
     - name: Install Java
-      yum:
-        name: "{{ java_package }}"
-        state: present
+      command: yum install "{{java_package}}"
 
     - name: Add Jenkins repository
-      command: >
-        curl --silent --location "{{ jenkins_repo_url }}"
-        -o /etc/yum.repos.d/jenkins.repo
-      args:
-        creates: /etc/yum.repos.d/jenkins.repo
+      command: wget -O /etc/yum.repos.d/jenkins.repo \ "{{jenkins_repo_url}}"
 
     - name: Import Jenkins GPG key
-      ansible.builtin.rpm_key:
-       state: present
-       key: "{{ jenkins_repo_key_url }}"
+      command: rpm --import "{{jenkins_repo_key_url}}"
+
     - name: Install Jenkins
-      yum:
-        name: jenkins
-        state: present
+      command: yum install jenkins -y
 
+    - name: enable Jenkins service
+      command: systemctl enable jenkins
+    
     - name: Start Jenkins service
-      service:
-        name: jenkins
-        state: started
-        enabled: yes
-
+      command: systemctl start jenkins
+      
     - name: read file
       slurp:
         src: /var/lib/jenkins/secrets/initialAdminPassword
