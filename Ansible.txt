@@ -1,6 +1,6 @@
 To install ansible on amazonlinux
 -----------------------------------
-amazon-linux-extras install ansible2 -y
+yum install ansible -y
 yum install python-pip -y
 
 Create a user on master and slave instance: sudo adduser username
